@@ -1,9 +1,6 @@
-name: Deploy Azure Functions
+name: Deploy to Azure
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 jobs:
   build-and-deploy:
@@ -48,15 +45,25 @@ jobs:
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
-    - name: Output Function App Names
-      id: output
+    - name: Debug Terraform Output
       run: |
-        echo "FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log)" >> $GITHUB_ENV
-        echo "FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log)" >> $GITHUB_ENV
+        echo "Terraform output:"
+        terraform output -raw function_app_name_receive_log
+      working-directory: ./terraform
+
+    - name: Set FUNCTION_APP_NAME_RECEIVE_LOG
+      run: |
+        FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log | tr -d '\r\n')
+        echo "FUNCTION_APP_NAME_RECEIVE_LOG=$FUNCTION_APP_NAME_RECEIVE_LOG" >> $GITHUB_ENV
+      working-directory: ./terraform
+
+    - name: Set FUNCTION_APP_NAME_RETRIEVE_LOG
+      run: |
+        FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log | tr -d '\r\n')
+        echo "FUNCTION_APP_NAME_RETRIEVE_LOG=$FUNCTION_APP_NAME_RETRIEVE_LOG" >> $GITHUB_ENV
       working-directory: ./terraform
 
     - name: Get Publish Profile for Receive Log Function
-      id: get_publish_profile_receive_log
       run: |
         az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
         az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
@@ -68,7 +75,6 @@ jobs:
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
     - name: Get Publish Profile for Retrieve Log Function
-      id: get_publish_profile_retrieve_log
       run: |
         az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
         az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
@@ -80,13 +86,11 @@ jobs:
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
     - name: Read Publish Profile for Receive Log Function
-      id: read_publish_profile_receive_log
       run: |
         publish_profile=$(cat publishProfileReceiveLog.txt)
         echo "PUBLISH_PROFILE_RECEIVE_LOG=$publish_profile" >> $GITHUB_ENV
 
     - name: Read Publish Profile for Retrieve Log Function
-      id: read_publish_profile_retrieve_log
       run: |
         publish_profile=$(cat publishProfileRetrieveLog.txt)
         echo "PUBLISH_PROFILE_RETRIEVE_LOG=$publish_profile" >> $GITHUB_ENV
