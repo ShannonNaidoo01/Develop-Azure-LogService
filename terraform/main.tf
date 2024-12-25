@@ -3,34 +3,39 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
+locals {
+  formatted_release_version = format("%03d", var.release_version)
+}
+
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
 }
 
 resource "azurerm_storage_account" "sa" {
-  name                     = var.storage_account_name
+  name                     = "storweqa${local.formatted_release_version}"
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
+  account_tier             = var.account_tier
+  account_replication_type = var.replication_type
+  allow_nested_items_to_be_public = false
+  cross_tenant_replication_enabled = false
+  tags                     = var.tags
 }
 
-resource "azurerm_app_service_plan" "asp" {
-  name                = var.app_service_plan_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  sku {
-    tier = "Dynamic"
-    size = "Y1"
-  }
+resource "azurerm_service_plan" "windows_asp" {
+  name                = "serviceplanweqa${local.formatted_release_version}"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  os_type             = "Windows"
+  sku_name            = "P1v2"
 }
 
 resource "azurerm_function_app" "fa" {
   name                       = var.function_app_name
   location                   = azurerm_resource_group.rg.location
   resource_group_name        = azurerm_resource_group.rg.name
-  app_service_plan_id        = azurerm_app_service_plan.asp.id
+  app_service_plan_id        = azurerm_service_plan.windows_asp.id
   storage_account_name       = azurerm_storage_account.sa.name
   storage_account_access_key = azurerm_storage_account.sa.primary_access_key
   os_type                    = "linux"
@@ -39,4 +44,7 @@ resource "azurerm_function_app" "fa" {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
   }
+
 }
+
+
