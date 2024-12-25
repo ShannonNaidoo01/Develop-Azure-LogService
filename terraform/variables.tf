@@ -22,3 +22,8 @@ variable "function_app_name" {
   description = "The name of the function app"
   type        = string
 }
+
+variable "subscription_id" {
+  description = "The subscription ID for the Azure account"
+  type        = string
+}

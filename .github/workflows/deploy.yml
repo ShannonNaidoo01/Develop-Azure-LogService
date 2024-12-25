@@ -33,14 +33,41 @@ jobs:
     - name: Terraform Plan
       run: terraform plan -out=tfplan
       working-directory: ./terraform
+      env:
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
     - name: Terraform Apply
       run: terraform apply -auto-approve tfplan
       working-directory: ./terraform
+      env:
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    - name: Output Function App Name
+      id: output
+      run: echo "::set-output name=function_app_name::$(terraform output -raw function_app_name)"
+      working-directory: ./terraform
+
+    - name: Get Publish Profile
+      id: get_publish_profile
+      run: |
+        az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
+        az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        az webapp deployment list-publishing-profiles --name ${{ steps.output.outputs.function_app_name }} --resource-group <ResourceGroupName> --output tsv > publishProfile.txt
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
     - name: Deploy to Azure
       uses: Azure/functions-action@v1
       with:
-        app-name: ${{ secrets.FUNCTION_APP_NAME }}
+        app-name: ${{ steps.output.outputs.function_app_name }}
         package: "."
         publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
