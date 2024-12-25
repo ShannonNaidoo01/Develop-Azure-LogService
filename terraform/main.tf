@@ -23,21 +23,19 @@ resource "azurerm_storage_account" "sa" {
   tags                     = var.tags
 }
 
-resource "azurerm_app_service_plan" "asp" {
+resource "azurerm_service_plan" "asp" {
   name                = var.app_service_plan_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  sku {
-    tier = "Dynamic"
-    size = "Y1"
-  }
+  os_type             = "Linux"
+  sku_name            = "P1v2"
 }
 
 resource "azurerm_function_app" "fa_receive_log" {
   name                       = "${var.function_app_name}-receive-log"
   location                   = azurerm_resource_group.rg.location
   resource_group_name        = azurerm_resource_group.rg.name
-  app_service_plan_id        = azurerm_app_service_plan.asp.id
+  app_service_plan_id        = azurerm_service_plan.asp.id
   storage_account_name       = azurerm_storage_account.sa.name
   storage_account_access_key = azurerm_storage_account.sa.primary_access_key
   os_type                    = "linux"
@@ -52,7 +50,7 @@ resource "azurerm_function_app" "fa_retrieve_log" {
   name                       = "${var.function_app_name}-retrieve-log"
   location                   = azurerm_resource_group.rg.location
   resource_group_name        = azurerm_resource_group.rg.name
-  app_service_plan_id        = azurerm_app_service_plan.asp.id
+  app_service_plan_id        = azurerm_service_plan.asp.id
   storage_account_name       = azurerm_storage_account.sa.name
   storage_account_access_key = azurerm_storage_account.sa.primary_access_key
   os_type                    = "linux"

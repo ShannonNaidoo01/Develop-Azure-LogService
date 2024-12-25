@@ -48,32 +48,59 @@ jobs:
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
-    - name: Output Function App Name
+    - name: Output Function App Names
       id: output
-      run: echo "::set-output name=function_app_name::$(terraform output -raw function_app_name)"
+      run: |
+        echo "FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log)" >> $GITHUB_ENV
+        echo "FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log)" >> $GITHUB_ENV
       working-directory: ./terraform
 
-    - name: Get Publish Profile
-      id: get_publish_profile
+    - name: Get Publish Profile for Receive Log Function
+      id: get_publish_profile_receive_log
       run: |
         az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
         az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        az webapp deployment list-publishing-profiles --name ${{ steps.output.outputs.function_app_name }} --resource-group <ResourceGroupName> --output tsv > publishProfile.txt
+        az webapp deployment list-publishing-profiles --name ${{ env.FUNCTION_APP_NAME_RECEIVE_LOG }} --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output tsv > publishProfileReceiveLog.txt
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
-    - name: Read Publish Profile
-      id: read_publish_profile
+    - name: Get Publish Profile for Retrieve Log Function
+      id: get_publish_profile_retrieve_log
       run: |
-        publish_profile=$(cat publishProfile.txt)
-        echo "::set-output name=publish_profile::$publish_profile"
+        az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
+        az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        az webapp deployment list-publishing-profiles --name ${{ env.FUNCTION_APP_NAME_RETRIEVE_LOG }} --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output tsv > publishProfileRetrieveLog.txt
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
-    - name: Deploy to Azure
+    - name: Read Publish Profile for Receive Log Function
+      id: read_publish_profile_receive_log
+      run: |
+        publish_profile=$(cat publishProfileReceiveLog.txt)
+        echo "PUBLISH_PROFILE_RECEIVE_LOG=$publish_profile" >> $GITHUB_ENV
+
+    - name: Read Publish Profile for Retrieve Log Function
+      id: read_publish_profile_retrieve_log
+      run: |
+        publish_profile=$(cat publishProfileRetrieveLog.txt)
+        echo "PUBLISH_PROFILE_RETRIEVE_LOG=$publish_profile" >> $GITHUB_ENV
+
+    - name: Deploy Receive Log Function to Azure
       uses: Azure/functions-action@v1
       with:
-        app-name: ${{ steps.output.outputs.function_app_name }}
-        package: "."
-        publish-profile: ${{ steps.read_publish_profile.outputs.publish_profile }}
+        app-name: ${{ env.FUNCTION_APP_NAME_RECEIVE_LOG }}
+        package: "./ReceiveLogEntry"
+        publish-profile: ${{ env.PUBLISH_PROFILE_RECEIVE_LOG }}
+
+    - name: Deploy Retrieve Log Function to Azure
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ env.FUNCTION_APP_NAME_RETRIEVE_LOG }}
+        package: "./RetrieveLogEntries"
+        publish-profile: ${{ env.PUBLISH_PROFILE_RETRIEVE_LOG }}
