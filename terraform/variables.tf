@@ -1,3 +1,8 @@
+variable "subscription_id" {
+  description = "The subscription ID for the Azure account"
+  type        = string
+}
+
 variable "resource_group_name" {
   description = "The name of the resource group"
   type        = string
@@ -5,11 +10,6 @@ variable "resource_group_name" {
 
 variable "location" {
   description = "The location of the resources"
-  type        = string
-}
-
-variable "storage_account_name" {
-  description = "The name of the storage account"
   type        = string
 }
 
@@ -23,7 +23,22 @@ variable "function_app_name" {
   type        = string
 }
 
-variable "subscription_id" {
-  description = "The subscription ID for the Azure account"
+variable "release_version" {
+  description = "The release version to ensure unique storage account names"
+  type        = number
+}
+
+variable "account_tier" {
+  description = "The tier of the storage account"
   type        = string
+}
+
+variable "replication_type" {
+  description = "The replication type of the storage account"
+  type        = string
+}
+
+variable "tags" {
+  description = "Tags for the resources"
+  type        = map(string)
 }

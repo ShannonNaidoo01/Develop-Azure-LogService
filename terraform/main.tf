@@ -23,19 +23,21 @@ resource "azurerm_storage_account" "sa" {
   tags                     = var.tags
 }
 
-resource "azurerm_service_plan" "windows_asp" {
-  name                = "serviceplanweqa${local.formatted_release_version}"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  os_type             = "Windows"
-  sku_name            = "P1v2"
+resource "azurerm_app_service_plan" "asp" {
+  name                = var.app_service_plan_name
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  sku {
+    tier = "Dynamic"
+    size = "Y1"
+  }
 }
 
-resource "azurerm_function_app" "fa" {
-  name                       = var.function_app_name
+resource "azurerm_function_app" "fa_receive_log" {
+  name                       = "${var.function_app_name}-receive-log"
   location                   = azurerm_resource_group.rg.location
   resource_group_name        = azurerm_resource_group.rg.name
-  app_service_plan_id        = azurerm_service_plan.windows_asp.id
+  app_service_plan_id        = azurerm_app_service_plan.asp.id
   storage_account_name       = azurerm_storage_account.sa.name
   storage_account_access_key = azurerm_storage_account.sa.primary_access_key
   os_type                    = "linux"
@@ -44,7 +46,19 @@ resource "azurerm_function_app" "fa" {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
   }
-
 }
 
-
+resource "azurerm_function_app" "fa_retrieve_log" {
+  name                       = "${var.function_app_name}-retrieve-log"
+  location                   = azurerm_resource_group.rg.location
+  resource_group_name        = azurerm_resource_group.rg.name
+  app_service_plan_id        = azurerm_app_service_plan.asp.id
+  storage_account_name       = azurerm_storage_account.sa.name
+  storage_account_access_key = azurerm_storage_account.sa.primary_access_key
+  os_type                    = "linux"
+  version                    = "~3"
+  app_settings = {
+    FUNCTIONS_WORKER_RUNTIME = "python"
+    AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
+  }
+}
