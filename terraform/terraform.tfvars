@@ -1,0 +1,5 @@
+resource_group_name   = "logservice-rg"
+location              = "East US"
+storage_account_name  = "logservicestorage"
+app_service_plan_name = "logservice-asp"
+function_app_name     = "logservice-fa"
