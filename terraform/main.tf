@@ -31,32 +31,38 @@ resource "azurerm_service_plan" "asp" {
   sku_name            = "P1v2"
 }
 
-resource "azurerm_function_app" "fa_receive_log" {
+resource "azurerm_linux_function_app" "fa_receive_log" {
   name                       = "fareceivelog"
   location                   = azurerm_resource_group.rg.location
   resource_group_name        = azurerm_resource_group.rg.name
-  app_service_plan_id        = azurerm_service_plan.asp.id
+  service_plan_id            = azurerm_service_plan.asp.id
   storage_account_name       = azurerm_storage_account.sa.name
   storage_account_access_key = azurerm_storage_account.sa.primary_access_key
-  os_type                    = "linux"
-  version                    = "~3"
+  site_config {
+    application_stack {
+      python_version = "3.8"
+    }
+  }
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
   }
 }
 
-resource "azurerm_function_app" "fa_retrieve_log" {
+resource "azurerm_linux_function_app" "fa_retrieve_log" {
   name                       = "faretrievelog"
   location                   = azurerm_resource_group.rg.location
   resource_group_name        = azurerm_resource_group.rg.name
-  app_service_plan_id        = azurerm_service_plan.asp.id
+  service_plan_id            = azurerm_service_plan.asp.id
   storage_account_name       = azurerm_storage_account.sa.name
   storage_account_access_key = azurerm_storage_account.sa.primary_access_key
-  os_type                    = "linux"
-  version                    = "~3"
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
+  }
+  site_config {
+    application_stack {
+      python_version = "3.8"
+    }
   }
 }
