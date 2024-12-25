@@ -32,7 +32,7 @@ resource "azurerm_service_plan" "asp" {
 }
 
 resource "azurerm_function_app" "fa_receive_log" {
-  name                       = "${var.function_app_name}receivelog"
+  name                       = "fareceivelog"
   location                   = azurerm_resource_group.rg.location
   resource_group_name        = azurerm_resource_group.rg.name
   app_service_plan_id        = azurerm_service_plan.asp.id
@@ -47,7 +47,7 @@ resource "azurerm_function_app" "fa_receive_log" {
 }
 
 resource "azurerm_function_app" "fa_retrieve_log" {
-  name                       = "${var.function_app_name}retrievelog"
+  name                       = "faretrievelog"
   location                   = azurerm_resource_group.rg.location
   resource_group_name        = azurerm_resource_group.rg.name
   app_service_plan_id        = azurerm_service_plan.asp.id
