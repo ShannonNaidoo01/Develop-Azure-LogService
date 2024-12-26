@@ -33,51 +33,58 @@ jobs:
       run: terraform apply -auto-approve tfplan
       working-directory: ./terraform
 
-    - name: Get Publish Profile for Receive Log Function
-      id: get-publish-profile-receive
+    - name: Get Function App Names from Terraform Output
+      id: get-function-app-names
       run: |
-        FUNCTION_APP_NAME_RECEIVE_LOG="logservice-fa-receive-log"
-        echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RECEIVE_LOG"
-        az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RECEIVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileReceiveLog.json
+        FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log | tr -d '\r\n')
+        FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log | tr -d '\r\n')
+        echo "FUNCTION_APP_NAME_RECEIVE_LOG=$FUNCTION_APP_NAME_RECEIVE_LOG" >> $GITHUB_ENV
+        echo "FUNCTION_APP_NAME_RETRIEVE_LOG=$FUNCTION_APP_NAME_RETRIEVE_LOG" >> $GITHUB_ENV
+      working-directory: ./terraform
+
+    - name: Get Publish Profile for Receive Log Function
+      run: |
+        echo "Getting publish profile for function app: ${{ env.FUNCTION_APP_NAME_RECEIVE_LOG }}"
+        az webapp deployment list-publishing-profiles --name ${{ env.FUNCTION_APP_NAME_RECEIVE_LOG }} --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileReceiveLog.json
         cat publishProfileReceiveLog.json
         publish_profile=$(jq -r '.[0].publishProfile' publishProfileReceiveLog.json)
-        echo "::set-output name=publish_profile_receive::$publish_profile"
+        echo "PUBLISH_PROFILE_RECEIVE_LOG=\"$publish_profile\"" >> $GITHUB_ENV
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    - name: Get Publish Profile for Retrieve Log Function
+      run: |
+        echo "Getting publish profile for function app: ${{ env.FUNCTION_APP_NAME_RETRIEVE_LOG }}"
+        az webapp deployment list-publishing-profiles --name ${{ env.FUNCTION_APP_NAME_RETRIEVE_LOG }} --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileRetrieveLog.json
+        cat publishProfileRetrieveLog.json
+        publish_profile=$(jq -r '.[0].publishProfile' publishProfileRetrieveLog.json)
+        echo "PUBLISH_PROFILE_RETRIEVE_LOG=\"$publish_profile\"" >> $GITHUB_ENV
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    - name: Debug Environment Variables
+      run: |
+        echo "FUNCTION_APP_NAME_RECEIVE_LOG: ${{ env.FUNCTION_APP_NAME_RECEIVE_LOG }}"
+        echo "PUBLISH_PROFILE_RECEIVE_LOG: ${{ env.PUBLISH_PROFILE_RECEIVE_LOG }}"
+        echo "FUNCTION_APP_NAME_RETRIEVE_LOG: ${{ env.FUNCTION_APP_NAME_RETRIEVE_LOG }}"
+        echo "PUBLISH_PROFILE_RETRIEVE_LOG: ${{ env.PUBLISH_PROFILE_RETRIEVE_LOG }}"
 
     - name: Deploy Receive Log Function to Azure
       uses: Azure/functions-action@v1
       with:
-        app-name: "logservice-fa-receive-log"
+        app-name: ${{ env.FUNCTION_APP_NAME_RECEIVE_LOG }}
         package: "./ReceiveLogEntry"
-        publish-profile: ${{ steps.get-publish-profile-receive.outputs.publish_profile_receive }}
-
-    - name: Get Publish Profile for Retrieve Log Function
-      id: get-publish-profile-retrieve
-      run: |
-        FUNCTION_APP_NAME_RETRIEVE_LOG="logservice-fa-retrieve-log"
-        echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RETRIEVE_LOG"
-        az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RETRIEVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileRetrieveLog.json
-        cat publishProfileRetrieveLog.json
-        publish_profile=$(jq -r '.[0].publishProfile' publishProfileRetrieveLog.json)
-        echo "::set-output name=publish_profile_retrieve::$publish_profile"
-      env:
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        publish-profile: ${{ env.PUBLISH_PROFILE_RECEIVE_LOG }}
 
     - name: Deploy Retrieve Log Function to Azure
       uses: Azure/functions-action@v1
       with:
-        app-name: "logservice-fa-retrieve-log"
+        app-name: ${{ env.FUNCTION_APP_NAME_RETRIEVE_LOG }}
         package: "./RetrieveLogEntries"
-        publish-profile: ${{ steps.get-publish-profile-retrieve.outputs.publish_profile_retrieve }}
-
-    - name: Debug Environment Variables
-      run: |
-        echo "PUBLISH_PROFILE_RECEIVE_LOG: ${{ steps.get-publish-profile-receive.outputs.publish_profile_receive }}"
-        echo "PUBLISH_PROFILE_RETRIEVE_LOG: ${{ steps.get-publish-profile-retrieve.outputs.publish_profile_retrieve }}"
+        publish-profile: ${{ env.PUBLISH_PROFILE_RETRIEVE_LOG }}
