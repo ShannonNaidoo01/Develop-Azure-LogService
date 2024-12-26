@@ -30,34 +30,33 @@ jobs:
       run: terraform apply -auto-approve tfplan
       working-directory: ./terraform
 
-    - name: Get Publish Profile for Receive Log Function
+    # Hardcoded function app names for testing
+    - name: Get Publish Profile for Receive Log Function (Hardcoded)
       run: |
-        FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log | tr -d '"')
+        FUNCTION_APP_NAME_RECEIVE_LOG="logservice-fa-receive-log"
         echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RECEIVE_LOG"
         az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RECEIVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output tsv > publishProfileReceiveLog.txt
         publish_profile=$(cat publishProfileReceiveLog.txt)
         echo "PUBLISH_PROFILE_RECEIVE_LOG=$publish_profile" >> $GITHUB_ENV
-      working-directory: ./terraform
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-    
-    - name: Get Publish Profile for Retrieve Log Function
+
+    - name: Get Publish Profile for Retrieve Log Function (Hardcoded)
       run: |
-        FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log | tr -d '"')
+        FUNCTION_APP_NAME_RETRIEVE_LOG="logservice-fa-retrieve-log"
         echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RETRIEVE_LOG"
         az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RETRIEVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output tsv > publishProfileRetrieveLog.txt
         publish_profile=$(cat publishProfileRetrieveLog.txt)
         echo "PUBLISH_PROFILE_RETRIEVE_LOG=$publish_profile" >> $GITHUB_ENV
-      working-directory: ./terraform
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-    
+
     - name: Deploy Receive Log Function to Azure
       uses: Azure/functions-action@v1
       with:
