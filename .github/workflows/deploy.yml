@@ -45,18 +45,28 @@ jobs:
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
-    - name: Debug Terraform Output
+    # Debug Terraform Output for Receive Log Function
+    - name: Debug Terraform Output (Receive Log Function)
       run: |
-        echo "Terraform output:"
-        terraform output -raw function_app_name_receive_log
+        echo "Terraform output for function_app_name_receive_log:"
+        terraform output function_app_name_receive_log
       working-directory: ./terraform
 
+    # Set the environment variable for FUNCTION_APP_NAME_RECEIVE_LOG
     - name: Set FUNCTION_APP_NAME_RECEIVE_LOG
       run: |
         FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log | tr -d '\r\n')
         echo "FUNCTION_APP_NAME_RECEIVE_LOG=$FUNCTION_APP_NAME_RECEIVE_LOG" >> $GITHUB_ENV
       working-directory: ./terraform
 
+    # Debug Terraform Output for Retrieve Log Function
+    - name: Debug Terraform Output (Retrieve Log Function)
+      run: |
+        echo "Terraform output for function_app_name_retrieve_log:"
+        terraform output function_app_name_retrieve_log
+      working-directory: ./terraform
+
+    # Set the environment variable for FUNCTION_APP_NAME_RETRIEVE_LOG
     - name: Set FUNCTION_APP_NAME_RETRIEVE_LOG
       run: |
         FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log | tr -d '\r\n')
