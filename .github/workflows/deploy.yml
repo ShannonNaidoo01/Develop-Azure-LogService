@@ -39,6 +39,11 @@ jobs:
         app-name: ${{ secrets.FUNCTION_APP_NAME_RECEIVE_LOG }}
         package: "./ReceiveLogEntry"
         publish-profile: ${{ secrets.PUBLISH_PROFILE_RECEIVE_LOG }}
+        respect-pom-xml: false
+        respect-funcignore: false
+        scm-do-build-during-deployment: false
+        enable-oryx-build: false
+        remote-build: false
 
     - name: Deploy Retrieve Log Function to Azure
       uses: Azure/functions-action@v1
@@ -46,6 +51,11 @@ jobs:
         app-name: ${{ secrets.FUNCTION_APP_NAME_RETRIEVE_LOG }}
         package: "./RetrieveLogEntries"
         publish-profile: ${{ secrets.PUBLISH_PROFILE_RETRIEVE_LOG }}
+        respect-pom-xml: false
+        respect-funcignore: false
+        scm-do-build-during-deployment: false
+        enable-oryx-build: false
+        remote-build: false
 
     - name: Debug Environment Variables
       run: |
