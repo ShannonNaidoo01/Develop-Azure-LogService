@@ -30,15 +30,9 @@ jobs:
       run: terraform apply -auto-approve tfplan
       working-directory: ./terraform
 
-    - name: Debug Terraform Output for Receive Log Function
-      run: |
-        echo "Debugging Terraform output for function_app_name_receive_log:"
-        terraform output -json function_app_name_receive_log
-      working-directory: ./terraform
-
     - name: Get Publish Profile for Receive Log Function
       run: |
-        FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -json function_app_name_receive_log | jq -r '.value')
+        FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log | tr -d '"')
         echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RECEIVE_LOG"
         az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RECEIVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output tsv > publishProfileReceiveLog.txt
         publish_profile=$(cat publishProfileReceiveLog.txt)
@@ -50,15 +44,9 @@ jobs:
         AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
     
-    - name: Debug Terraform Output for Retrieve Log Function
-      run: |
-        echo "Debugging Terraform output for function_app_name_retrieve_log:"
-        terraform output -json function_app_name_retrieve_log
-      working-directory: ./terraform
-
     - name: Get Publish Profile for Retrieve Log Function
       run: |
-        FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -json function_app_name_retrieve_log | jq -r '.value')
+        FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log | tr -d '"')
         echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RETRIEVE_LOG"
         az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RETRIEVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output tsv > publishProfileRetrieveLog.txt
         publish_profile=$(cat publishProfileRetrieveLog.txt)
