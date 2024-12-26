@@ -39,6 +39,11 @@ jobs:
     - name: Set FUNCTION_APP_NAME_RECEIVE_LOG
       run: |
         FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log | tr -d '\r\n')
+        echo "FUNCTION_APP_NAME_RECEIVE_LOG: $FUNCTION_APP_NAME_RECEIVE_LOG"
+        if [[ -z "$FUNCTION_APP_NAME_RECEIVE_LOG" ]]; then
+          echo "Error: FUNCTION_APP_NAME_RECEIVE_LOG is empty"
+          exit 1
+        fi
         echo "FUNCTION_APP_NAME_RECEIVE_LOG=$FUNCTION_APP_NAME_RECEIVE_LOG" >> $GITHUB_ENV
       working-directory: ./terraform
     
@@ -51,6 +56,11 @@ jobs:
     - name: Set FUNCTION_APP_NAME_RETRIEVE_LOG
       run: |
         FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log | tr -d '\r\n')
+        echo "FUNCTION_APP_NAME_RETRIEVE_LOG: $FUNCTION_APP_NAME_RETRIEVE_LOG"
+        if [[ -z "$FUNCTION_APP_NAME_RETRIEVE_LOG" ]]; then
+          echo "Error: FUNCTION_APP_NAME_RETRIEVE_LOG is empty"
+          exit 1
+        fi
         echo "FUNCTION_APP_NAME_RETRIEVE_LOG=$FUNCTION_APP_NAME_RETRIEVE_LOG" >> $GITHUB_ENV
       working-directory: ./terraform
     
