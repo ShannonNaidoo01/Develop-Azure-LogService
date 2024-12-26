@@ -39,7 +39,7 @@ jobs:
         echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RECEIVE_LOG"
         az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RECEIVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileReceiveLog.json
         cat publishProfileReceiveLog.json
-        publish_profile=$(jq -r '.[0].publishingProfile' publishProfileReceiveLog.json)
+        publish_profile=$(jq -r '.[0].publishUrl' publishProfileReceiveLog.json)
         echo "PUBLISH_PROFILE_RECEIVE_LOG=$publish_profile" >> $GITHUB_ENV
         echo "FUNCTION_APP_NAME_RECEIVE_LOG=$FUNCTION_APP_NAME_RECEIVE_LOG" >> $GITHUB_ENV
       env:
@@ -54,7 +54,7 @@ jobs:
         echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RETRIEVE_LOG"
         az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RETRIEVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileRetrieveLog.json
         cat publishProfileRetrieveLog.json
-        publish_profile=$(jq -r '.[0].publishingProfile' publishProfileRetrieveLog.json)
+        publish_profile=$(jq -r '.[0].publishUrl' publishProfileRetrieveLog.json)
         echo "PUBLISH_PROFILE_RETRIEVE_LOG=$publish_profile" >> $GITHUB_ENV
         echo "FUNCTION_APP_NAME_RETRIEVE_LOG=$FUNCTION_APP_NAME_RETRIEVE_LOG" >> $GITHUB_ENV
       env:
