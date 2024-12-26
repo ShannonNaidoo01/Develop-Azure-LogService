@@ -18,6 +18,9 @@ jobs:
         az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
         az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
+    - name: Install jq
+      run: sudo apt-get install -y jq
+
     - name: Terraform Init
       run: terraform init
       working-directory: ./terraform
@@ -37,6 +40,7 @@ jobs:
         az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RECEIVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileReceiveLog.json
         publish_profile=$(jq -r '.[0].publishingProfile' publishProfileReceiveLog.json)
         echo "PUBLISH_PROFILE_RECEIVE_LOG=$publish_profile" >> $GITHUB_ENV
+        echo "FUNCTION_APP_NAME_RECEIVE_LOG=$FUNCTION_APP_NAME_RECEIVE_LOG" >> $GITHUB_ENV
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -50,11 +54,19 @@ jobs:
         az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RETRIEVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileRetrieveLog.json
         publish_profile=$(jq -r '.[0].publishingProfile' publishProfileRetrieveLog.json)
         echo "PUBLISH_PROFILE_RETRIEVE_LOG=$publish_profile" >> $GITHUB_ENV
+        echo "FUNCTION_APP_NAME_RETRIEVE_LOG=$FUNCTION_APP_NAME_RETRIEVE_LOG" >> $GITHUB_ENV
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    - name: Debug Environment Variables
+      run: |
+        echo "FUNCTION_APP_NAME_RECEIVE_LOG: ${{ env.FUNCTION_APP_NAME_RECEIVE_LOG }}"
+        echo "PUBLISH_PROFILE_RECEIVE_LOG: ${{ env.PUBLISH_PROFILE_RECEIVE_LOG }}"
+        echo "FUNCTION_APP_NAME_RETRIEVE_LOG: ${{ env.FUNCTION_APP_NAME_RETRIEVE_LOG }}"
+        echo "PUBLISH_PROFILE_RETRIEVE_LOG: ${{ env.PUBLISH_PROFILE_RETRIEVE_LOG }}"
 
     - name: Deploy Receive Log Function to Azure
       uses: Azure/functions-action@v1
