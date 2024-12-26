@@ -55,7 +55,7 @@ jobs:
     # Set the environment variable for FUNCTION_APP_NAME_RECEIVE_LOG
     - name: Set FUNCTION_APP_NAME_RECEIVE_LOG
       run: |
-        FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output function_app_name_receive_log | tr -d '\r\n')
+        FUNCTION_APP_NAME_RECEIVE_LOG=$(terraform output -raw function_app_name_receive_log)
         echo "FUNCTION_APP_NAME_RECEIVE_LOG=$FUNCTION_APP_NAME_RECEIVE_LOG" >> $GITHUB_ENV
       working-directory: ./terraform
 
@@ -69,7 +69,7 @@ jobs:
     # Set the environment variable for FUNCTION_APP_NAME_RETRIEVE_LOG
     - name: Set FUNCTION_APP_NAME_RETRIEVE_LOG
       run: |
-        FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output function_app_name_retrieve_log | tr -d '\r\n')
+        FUNCTION_APP_NAME_RETRIEVE_LOG=$(terraform output -raw function_app_name_retrieve_log)
         echo "FUNCTION_APP_NAME_RETRIEVE_LOG=$FUNCTION_APP_NAME_RETRIEVE_LOG" >> $GITHUB_ENV
       working-directory: ./terraform
 
@@ -87,6 +87,7 @@ jobs:
         AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
         FUNCTION_APP_NAME_RECEIVE_LOG: ${{ env.FUNCTION_APP_NAME_RECEIVE_LOG }}
 
+    # Get Publish Profile for Retrieve Log Function
     - name: Get Publish Profile for Retrieve Log Function
       run: |
         az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
