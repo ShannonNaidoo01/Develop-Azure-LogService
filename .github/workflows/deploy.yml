@@ -30,13 +30,12 @@ jobs:
       run: terraform apply -auto-approve tfplan
       working-directory: ./terraform
 
-    # Hardcoded function app names for testing
     - name: Get Publish Profile for Receive Log Function (Hardcoded)
       run: |
         FUNCTION_APP_NAME_RECEIVE_LOG="logservice-fa-receive-log"
         echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RECEIVE_LOG"
-        az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RECEIVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output tsv > publishProfileReceiveLog.txt
-        publish_profile=$(cat publishProfileReceiveLog.txt)
+        az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RECEIVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileReceiveLog.json
+        publish_profile=$(jq -r '.[0].publishingProfile' publishProfileReceiveLog.json)
         echo "PUBLISH_PROFILE_RECEIVE_LOG=$publish_profile" >> $GITHUB_ENV
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
@@ -48,8 +47,8 @@ jobs:
       run: |
         FUNCTION_APP_NAME_RETRIEVE_LOG="logservice-fa-retrieve-log"
         echo "Getting publish profile for function app: $FUNCTION_APP_NAME_RETRIEVE_LOG"
-        az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RETRIEVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output tsv > publishProfileRetrieveLog.txt
-        publish_profile=$(cat publishProfileRetrieveLog.txt)
+        az webapp deployment list-publishing-profiles --name $FUNCTION_APP_NAME_RETRIEVE_LOG --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} --output json > publishProfileRetrieveLog.json
+        publish_profile=$(jq -r '.[0].publishingProfile' publishProfileRetrieveLog.json)
         echo "PUBLISH_PROFILE_RETRIEVE_LOG=$publish_profile" >> $GITHUB_ENV
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
