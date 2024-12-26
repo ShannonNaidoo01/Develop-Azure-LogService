@@ -1,6 +1,6 @@
-resource_group_name   = "logservice-rg"
+resource_group_name   = "logservice-rg1"
 location              = "West Europe"
-app_service_plan_name = "logservice-asp"
+app_service_plan_name = "logservice-asp1"
 function_app_name     = "log"
 subscription_id       = "3d3eb4bd-5545-4196-b236-48a3af7a1b3f"
 release_version       = 1

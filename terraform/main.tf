@@ -7,7 +7,7 @@ locals {
   formatted_release_version = format("%03d", var.release_version)
 }
 
-resource "azurerm_resource_group" "rg1" {
+resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
 }
@@ -23,7 +23,7 @@ resource "azurerm_storage_account" "sa" {
   tags                     = var.tags
 }
 
-resource "azurerm_service_plan" "asp-new" {
+resource "azurerm_service_plan" "asp" {
   name                = var.app_service_plan_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
