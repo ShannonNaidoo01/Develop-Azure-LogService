@@ -12,6 +12,39 @@ resource "azurerm_resource_group" "rg" {
   location = var.location
 }
 
+resource "azurerm_cosmosdb_account" "cosmos_account" {
+  name                = "cosmos${local.formatted_release_version}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  offer_type          = "Standard"
+  kind                = "GlobalDocumentDB"
+
+  consistency_policy {
+    consistency_level = "Session"
+  }
+
+  geo_location {
+    location          = azurerm_resource_group.rg.location
+    failover_priority = 0
+  }
+}
+
+resource "azurerm_cosmosdb_sql_database" "database" {
+  name                = "LogDatabase"
+  resource_group_name = azurerm_resource_group.rg.name
+  account_name        = azurerm_cosmosdb_account.cosmos_account.name
+}
+
+resource "azurerm_cosmosdb_sql_container" "container" {
+  name                = "LogContainer"
+  resource_group_name = azurerm_resource_group.rg.name
+  account_name        = azurerm_cosmosdb_account.cosmos_account.name
+  database_name       = azurerm_cosmosdb_sql_database.database.name
+  partition_key_paths = ["/id"]
+
+  throughput = 400
+}
+
 resource "azurerm_storage_account" "sa" {
   name                     = "storweqa${local.formatted_release_version}"
   resource_group_name      = azurerm_resource_group.rg.name
