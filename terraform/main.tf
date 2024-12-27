@@ -13,7 +13,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 resource "azurerm_cosmosdb_account" "cosmos_account" {
-  name                = "cosmos${local.formatted_release_version}"
+  name                = "cosmosnew${local.formatted_release_version}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   offer_type          = "Standard"
@@ -44,6 +44,7 @@ resource "azurerm_cosmosdb_sql_container" "container" {
 
   throughput = 400
 }
+
 
 resource "azurerm_storage_account" "sa" {
   name                     = "storweqa${local.formatted_release_version}"
@@ -79,8 +80,10 @@ resource "azurerm_linux_function_app" "fa_receive_log" {
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
+    CosmosDBConnectionString = azurerm_cosmosdb_account.cosmos_account.connection_strings[0]
   }
 }
+
 
 resource "azurerm_linux_function_app" "fa_retrieve_log" {
   name                       = "${var.function_app_name}-retrieve-log"
@@ -92,6 +95,7 @@ resource "azurerm_linux_function_app" "fa_retrieve_log" {
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
+    CosmosDBConnectionString = azurerm_cosmosdb_account.cosmos_account.connection_strings[0]
   }
   site_config {
     application_stack {
