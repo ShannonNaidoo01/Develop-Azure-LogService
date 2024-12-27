@@ -40,7 +40,7 @@ resource "azurerm_linux_function_app" "fa_receive_log" {
   storage_account_access_key = azurerm_storage_account.sa.primary_access_key
   site_config {
     application_stack {
-      python_version = "3.8"
+      python_version = "3.11"
     }
   }
   app_settings = {
@@ -62,7 +62,7 @@ resource "azurerm_linux_function_app" "fa_retrieve_log" {
   }
   site_config {
     application_stack {
-      python_version = "3.8"
+      python_version = "3.11"
     }
   }
 }
