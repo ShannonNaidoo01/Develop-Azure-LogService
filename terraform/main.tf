@@ -45,7 +45,6 @@ resource "azurerm_cosmosdb_sql_container" "container" {
   throughput = 400
 }
 
-
 resource "azurerm_storage_account" "sa" {
   name                     = "storweqa${local.formatted_release_version}"
   resource_group_name      = azurerm_resource_group.rg.name
@@ -80,10 +79,9 @@ resource "azurerm_linux_function_app" "fa_receive_log" {
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
-    CosmosDBConnectionString = azurerm_cosmosdb_account.cosmos_account.connection_strings[0]
+    CosmosDBConnectionString = azurerm_cosmosdb_account.cosmos_account.primary_connection_string
   }
 }
-
 
 resource "azurerm_linux_function_app" "fa_retrieve_log" {
   name                       = "${var.function_app_name}-retrieve-log"
@@ -95,11 +93,15 @@ resource "azurerm_linux_function_app" "fa_retrieve_log" {
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
-    CosmosDBConnectionString = azurerm_cosmosdb_account.cosmos_account.connection_strings[0]
+    CosmosDBConnectionString = azurerm_cosmosdb_account.cosmos_account.primary_connection_string
   }
   site_config {
     application_stack {
       python_version = "3.11"
     }
   }
+}
+
+output "cosmosdb_connection_string" {
+  value = azurerm_cosmosdb_account.cosmos_account.primary_connection_string
 }
