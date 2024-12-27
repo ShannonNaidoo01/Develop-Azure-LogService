@@ -43,11 +43,6 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "release_version" {
-  description = "Release version"
-  type        = number
-}
-
 variable "cosmosdb_connection_string" {
   description = "Cosmos DB connection string"
   type        = string
