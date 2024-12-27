@@ -70,6 +70,12 @@ resource "azurerm_service_plan" "asp" {
   sku_name            = "P1v2"
 }
 
+# Fetch Cosmos DB Keys
+data "azurerm_cosmosdb_account_keys" "cosmos_keys" {
+  account_name        = azurerm_cosmosdb_account.cosmos_account.name
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
 # Function App for Receive Log
 resource "azurerm_linux_function_app" "fa_receive_log" {
   name                       = "${var.function_app_name}-receive-log"
@@ -88,7 +94,7 @@ resource "azurerm_linux_function_app" "fa_receive_log" {
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
-    CosmosDBConnectionString = azurerm_cosmosdb_account.cosmos_account.primary_master_key
+    CosmosDBConnectionString = data.azurerm_cosmosdb_account_keys.cosmos_keys.primary_master_key
   }
 }
 
@@ -104,7 +110,7 @@ resource "azurerm_linux_function_app" "fa_retrieve_log" {
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME = "python"
     AzureWebJobsStorage      = azurerm_storage_account.sa.primary_connection_string
-    CosmosDBConnectionString = azurerm_cosmosdb_account.cosmos_account.primary_master_key
+    CosmosDBConnectionString = data.azurerm_cosmosdb_account_keys.cosmos_keys.primary_master_key
   }
 
   site_config {
@@ -114,7 +120,7 @@ resource "azurerm_linux_function_app" "fa_retrieve_log" {
   }
 }
 
-# Output the Cosmos DB connection string
+# Output the Cosmos DB primary master key
 output "cosmosdb_connection_string" {
-  value = azurerm_cosmosdb_account.cosmos_account.primary_master_key
+  value = data.azurerm_cosmosdb_account_keys.cosmos_keys.primary_master_key
 }
