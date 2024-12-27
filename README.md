@@ -168,4 +168,4 @@ Ensure the following environment variables are set in the Azure Function Apps:
 
 ## Conclusion
 
-This repository provides a fully automated solution for deploying serverless log services using Azure Functions, Terraform, and GitHub Actions. The solution includes two functions: one for receiving log entries and storing them in Azure Table Storage, and another for retrieving the most recent log entries. With a complete CI/CD pipeline in GitHub Actions, the solution is ready for continuous deployment and can be easily managed with Infrastructure as Code (IaC) principles.
+This repository provides a fully automated solution for deploying serverless log services using Azure Functions, Terraform, and GitHub Actions. The solution includes two functions: one for receiving log entries and storing them in Azure Table Storage, and another for retrieving the most recent log entries. With a complete CI/CD pipeline in GitHub Actions.
