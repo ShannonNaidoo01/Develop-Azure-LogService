@@ -41,10 +41,7 @@ jobs:
     - name: Install dependencies and deploy Receive Log Function
       run: |
         cd ./ReceiveLogEntry
-        python -m venv .venv
-        source .venv/bin/activate
         pip install -r requirements.txt
-        deactivate
         zip -r ../ReceiveLogEntry.zip .
         az functionapp deployment source config-zip -g ${{ secrets.RESOURCE_GROUP_NAME }} -n ${{ secrets.FUNCTION_APP_NAME_RECEIVE_LOG }} --src ../ReceiveLogEntry.zip
       shell: bash
@@ -52,10 +49,7 @@ jobs:
     - name: Install dependencies and deploy Retrieve Log Function
       run: |
         cd ./RetrieveLogEntries
-        python -m venv .venv
-        source .venv/bin/activate
         pip install -r requirements.txt
-        deactivate
         zip -r ../RetrieveLogEntries.zip .
         az functionapp deployment source config-zip -g ${{ secrets.RESOURCE_GROUP_NAME }} -n ${{ secrets.FUNCTION_APP_NAME_RETRIEVE_LOG }} --src ../RetrieveLogEntries.zip
       shell: bash
